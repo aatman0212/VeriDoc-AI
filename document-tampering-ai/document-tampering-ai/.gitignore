@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Model weights (large binary files)
+weights/*.pth
+!weights/.gitkeep
+
+# Generated dataset (can be regenerated from data_generation/generate_tampering.py)
+dataset/original/*
+dataset/tampered/*
+dataset/masks/*
+!dataset/original/.gitkeep
+!dataset/tampered/.gitkeep
+!dataset/masks/.gitkeep
+
+# Outputs
+outputs/predictions/*
+outputs/heatmaps/*
+outputs/evaluation/*
+!outputs/predictions/.gitkeep
+!outputs/heatmaps/.gitkeep
+!outputs/evaluation/.gitkeep
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
