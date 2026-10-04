@@ -380,8 +380,13 @@ def screen_document():
     # --- Module 3: Tamper Detection (hybrid: rule-based + AI) ---
     tamper_res = tamper_detector.analyze(cv_img=cv_img, pil_img=pil_img, mock_tampered=mock_tampered)
 
-    # --- Module 4: Face Matching & Duplicate Identity (AI/ML — pretrained) ---
-    face_1to1 = biometric_vault.verify_1_to_1(mock_scenario=mock_face_scenario)
+    # --- Module 4: Face Matching & Duplicate Identity (AI/ML & Perceptual Cosine) ---
+    face_cv_img = decode_base64_image(face_image_base64) if face_image_base64 else None
+    face_1to1 = biometric_vault.verify_1_to_1(
+        doc_img=cv_img,
+        live_img=face_cv_img,
+        mock_scenario=mock_face_scenario
+    )
     face_1toN = biometric_vault.search_1_to_n_duplicates(traveler_name=full_name, document_number=doc_number, mock_trigger_duplicate=mock_tampered)
 
     # --- Module 5a: MRZ/QR Signature Verification ---
