@@ -552,7 +552,7 @@ export const ScreeningResult: React.FC<ScreeningResultProps> = ({
               </div>
               <div className="aspect-[16/10] sm:aspect-[16/9] rounded-lg overflow-hidden border border-slate-700 bg-slate-900 flex items-center justify-center p-1">
                 <img
-                  src={traveler.photoUrl}
+                  src={traveler.documentFullUrl || traveler.photoUrl}
                   alt="Uploaded Document"
                   className="w-full h-full object-contain rounded"
                 />

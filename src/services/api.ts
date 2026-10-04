@@ -154,7 +154,7 @@ export const apiService = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(4000),
+        signal: AbortSignal.timeout(15000),
       });
 
       if (response.ok) {
@@ -201,7 +201,8 @@ export const apiService = {
             issuingCountry: input.nationality || 'IND',
             mrzLine1: input.mrzLine1,
             mrzLine2: input.mrzLine2,
-            photoUrl: input.imageBase64 || liveResult.traveler?.photoUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=380&fit=crop&crop=face',
+            photoUrl: liveResult.traveler?.photoUrl || input.imageBase64 || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=380&fit=crop&crop=face',
+            documentFullUrl: input.imageBase64 || liveResult.traveler?.documentFullUrl,
             livePhotoUrl: input.faceImageBase64 || liveResult.traveler?.livePhotoUrl || input.imageBase64 || (input.simulateFaceMismatch 
               ? 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=380&fit=crop&crop=face' 
               : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=380&fit=crop&crop=face'),
@@ -327,12 +328,19 @@ export const apiService = {
       });
     }
 
-    if (input.simulateFaceMismatch) {
-      score += 70;
-      detectedIssues.push('Critical Face Mismatch: Severe biometric identity disparity (42% similarity)');
+    const hasDifferentUploadedFace = Boolean(
+      input.imageBase64 &&
+      input.faceImageBase64 &&
+      input.imageBase64 !== input.faceImageBase64
+    );
+    const isFaceMismatchSuspected = Boolean(input.simulateFaceMismatch || hasDifferentUploadedFace);
+
+    if (isFaceMismatchSuspected) {
+      score += 45;
+      detectedIssues.push('Biometric Face Mismatch: Significant facial feature disparity (38.4% similarity below 75% threshold)');
       riskBreakdown.push({
         module: 'Face Verification',
-        scoreContribution: 70,
+        scoreContribution: 45,
         reason: 'Cosine vector distance exceeded security threshold (Impersonation Alert)',
         severity: 'high',
       });
@@ -420,11 +428,11 @@ export const apiService = {
         faceVerification: {
           id: 'face',
           name: 'Biometric Face Match',
-          status: input.simulateFaceMismatch ? 'mismatch' : 'valid',
-          badge: input.simulateFaceMismatch ? '42% SIMILARITY' : '98.4% SIMILARITY',
-          confidence: input.simulateFaceMismatch ? 42.6 : 98.4,
-          description: input.simulateFaceMismatch ? 'Face mismatch indicates impersonation.' : 'Facial vectors match.',
-          details: { Similarity: input.simulateFaceMismatch ? '42%' : '98.4%' },
+          status: isFaceMismatchSuspected ? 'mismatch' : 'valid',
+          badge: isFaceMismatchSuspected ? '38.4% SIMILARITY' : '98.4% SIMILARITY',
+          confidence: isFaceMismatchSuspected ? 38.4 : 98.4,
+          description: isFaceMismatchSuspected ? 'Biometric vector distance exceeded security threshold. Impersonation suspected.' : 'Facial vectors match.',
+          details: { Similarity: isFaceMismatchSuspected ? '38.4%' : '98.4%' },
         },
         crossDocument: {
           id: 'cross_doc',

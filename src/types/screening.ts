@@ -14,6 +14,7 @@ export interface TravelerProfile {
   mrzLine2?: string;
   photoUrl: string;
   livePhotoUrl: string;
+  documentFullUrl?: string;
 }
 
 export interface VerificationModuleResult {

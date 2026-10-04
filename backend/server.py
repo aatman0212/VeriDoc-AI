@@ -542,7 +542,12 @@ def screen_document():
             "documentType": doc_type,
             "expiryDate": expiry_date,
             "gender": gender,
-            "photoUrl": image_base64 or "https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&h=420&fit=crop",
+            "photoUrl": (
+                f"data:image/jpeg;base64,{face_1to1['extracted_portrait_b64']}"
+                if face_1to1.get("extracted_portrait_b64")
+                else (image_base64 or "https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&h=420&fit=crop")
+            ),
+            "documentFullUrl": image_base64,
             "livePhotoUrl": (
                 "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=380&fit=crop&crop=face"
                 if mock_face_scenario == "mismatch"
