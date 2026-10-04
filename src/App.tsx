@@ -184,6 +184,7 @@ export function App() {
           caseId={reportModalCaseId}
           isOpen={!!reportModalCaseId}
           onClose={() => setReportModalCaseId(null)}
+          liveResult={liveCases[reportModalCaseId] || liveCases[activeCaseId] || liveCases['VD-CUSTOM']}
         />
       )}
 
@@ -192,6 +193,7 @@ export function App() {
           caseId={reviewModalCaseId}
           isOpen={!!reviewModalCaseId}
           onClose={() => setReviewModalCaseId(null)}
+          liveResult={liveCases[reviewModalCaseId] || liveCases[activeCaseId] || liveCases['VD-CUSTOM']}
         />
       )}
     </div>

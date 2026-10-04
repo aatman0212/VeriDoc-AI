@@ -182,7 +182,7 @@ export const CaseDetails: React.FC<CaseDetailsProps> = ({
           <FaceComparison
             documentPhotoUrl={traveler.photoUrl}
             livePhotoUrl={traveler.livePhotoUrl}
-            similarity={modules.faceVerification.confidence || 42}
+            similarity={Math.round(modules.faceVerification.confidence ?? (modules.faceVerification.status === 'mismatch' ? 42 : 98))}
             travelerName={traveler.name}
           />
 

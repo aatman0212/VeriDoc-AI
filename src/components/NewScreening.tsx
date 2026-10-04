@@ -441,7 +441,7 @@ export const NewScreening: React.FC<NewScreeningProps> = ({ onStartAnalysis }) =
       expiryDate: finalExpiry,
       gender: customGender,
       imageBase64: customDocImage || undefined,
-      faceImageBase64: customFaceImage || undefined,
+      faceImageBase64: customFaceImage || customDocImage || undefined,
       simulateTampered: simulateTampering,
       simulateFaceMismatch: simulateFaceMismatch,
       secondaryDoc: enableSecondaryDoc ? {

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { X, ShieldAlert, CheckCircle2, UserCheck, AlertTriangle, Send } from 'lucide-react';
 import { DEMO_CASES } from '../mock/cases';
+import { ScreeningCase } from '../types/screening';
 
 interface ReviewModalProps {
   caseId: string;
   isOpen: boolean;
   onClose: () => void;
   onCommitted?: (disposition: string) => void;
+  liveResult?: ScreeningCase | null;
 }
 
 export const ReviewModal: React.FC<ReviewModalProps> = ({
@@ -14,10 +16,11 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
   isOpen,
   onClose,
   onCommitted,
+  liveResult,
 }) => {
   if (!isOpen) return null;
 
-  const currentCase = DEMO_CASES[caseId] || DEMO_CASES['VD-10241'];
+  const currentCase = liveResult || DEMO_CASES[caseId] || DEMO_CASES['VD-10241'];
   const [selectedAction, setSelectedAction] = useState('secondary');
   const [officerNotes, setOfficerNotes] = useState(
     'Possible physical portrait tampering detected via Error Level Analysis. Inter-pupillary facial distance delta indicates identity substitution risk. Routing traveler to Secondary Booth B for physical UV microscope inspection.'

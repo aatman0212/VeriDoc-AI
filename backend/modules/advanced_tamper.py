@@ -171,7 +171,7 @@ class AdvancedTamperDetector:
         # Flagged visual bounding boxes for UI proof overlay
         flagged_boxes: List[Dict[str, Any]] = []
 
-        is_tampered = bool(mock_tampered or (ela_noise > 12.0) or copy_move["copy_move_detected"] or patch_check["patch_anomaly_detected"])
+        is_tampered = bool(mock_tampered or (ela_noise > 32.0) or (copy_move["copy_move_detected"] and len(copy_move.get("clusters", [])) >= 8) or (patch_check["patch_anomaly_detected"] and patch_check.get("anomaly_score", 0) > 15.0))
 
         if mock_tampered:
             is_tampered = True

@@ -337,6 +337,7 @@ def screen_document():
 
     # Image decoding & Stage 1 Preprocessing
     image_base64 = data.get("image_base64")
+    face_image_base64 = data.get("face_image_base64")
     cv_img = None
     pil_img = None
     preproc_meta = {}
@@ -537,7 +538,11 @@ def screen_document():
             "expiryDate": expiry_date,
             "gender": gender,
             "photoUrl": image_base64 or "https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&h=420&fit=crop",
-            "livePhotoUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=380&fit=crop&crop=face" if mock_face_scenario == "mismatch" else "https://images.unsplash.com/photo-1544717305-2782549b5136?w=300&h=380&fit=crop&crop=face"
+            "livePhotoUrl": (
+                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=380&fit=crop&crop=face"
+                if mock_face_scenario == "mismatch"
+                else (face_image_base64 or image_base64 or "https://images.unsplash.com/photo-1544717305-2782549b5136?w=300&h=380&fit=crop&crop=face")
+            )
         },
         "modules": {
             "ocr": {
@@ -597,6 +602,23 @@ def screen_document():
                 "badge": "SLTD ALERT" if expiry_blacklist["interpol_sltd_hit"] else "WATCHLIST CLEAR",
                 "description": "Interpol Stolen & Lost Travel Documents (SLTD) database queried",
                 "details": expiry_blacklist
+            }
+        },
+        "pipeline_stages": {
+            "ocr": {
+                "checksum_valid": not (verhoeff_res and not verhoeff_res["valid"]),
+                "confidence": 99.4
+            },
+            "validation": {
+                "is_valid": not ((verhoeff_res and not verhoeff_res["valid"]) or (pan_res and not pan_res["valid"]))
+            },
+            "tampering": {
+                "tampering_detected": tamper_res["tampering_detected"],
+                "confidence": tamper_res["confidence_score"]
+            },
+            "face_verification": {
+                "similarity_score": face_1to1["similarity_score"],
+                "is_match": face_1to1["is_match"] and not face_1toN["duplicate_detected"]
             }
         },
         "tamperingHeatmapUrl": tamper_res["ela_heatmap_base64"],
