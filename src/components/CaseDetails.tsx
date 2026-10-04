@@ -184,6 +184,7 @@ export const CaseDetails: React.FC<CaseDetailsProps> = ({
             livePhotoUrl={traveler.livePhotoUrl}
             similarity={Math.round(modules.faceVerification.confidence ?? (modules.faceVerification.status === 'mismatch' ? 42 : 98))}
             travelerName={traveler.name}
+            noFaceInDocument={modules.faceVerification.details?.one_to_one?.no_face_in_document || (traveler as any)?.noFaceInDocument || !traveler.photoUrl}
           />
 
           {/* Validation & Detected Issues */}

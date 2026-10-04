@@ -441,7 +441,7 @@ export const NewScreening: React.FC<NewScreeningProps> = ({ onStartAnalysis }) =
       expiryDate: finalExpiry,
       gender: customGender,
       imageBase64: customDocImage || undefined,
-      faceImageBase64: customFaceImage || customDocImage || undefined,
+      faceImageBase64: customFaceImage || undefined,
       simulateTampered: simulateTampering,
       simulateFaceMismatch: simulateFaceMismatch,
       secondaryDoc: enableSecondaryDoc ? {
@@ -970,11 +970,11 @@ export const NewScreening: React.FC<NewScreeningProps> = ({ onStartAnalysis }) =
                       <span className="text-sm font-semibold text-slate-200">
                         Click or Drag & Drop Document Image
                       </span>
-                      <span className="text-xs text-slate-400 max-w-[240px]">
-                        Supports JPG, PNG, WEBP (Passport, Driver License, National ID)
+                      <span className="text-xs text-amber-300 font-medium max-w-[250px] bg-amber-950/40 px-2 py-1 rounded border border-amber-800/40">
+                        Upload FRONT side with photo (Aadhaar front, Passport photo page)
                       </span>
                       <span className="bg-slate-900 text-cyan-400 text-[10px] font-mono px-2.5 py-1 rounded border border-slate-800 mt-1">
-                        Select from your device
+                        Select Document from Device
                       </span>
                     </div>
                   )}
@@ -1040,7 +1040,7 @@ export const NewScreening: React.FC<NewScreeningProps> = ({ onStartAnalysis }) =
                           {customFaceImageName || 'passenger_face.jpg'}
                         </span>
                         <span className="text-[10px] font-mono text-emerald-400">
-                          ✓ 128D FaceNet Vector Ready (75% Match Threshold)
+                          ✓ YuNet Face Detector + SFace 128D Ready
                         </span>
                       </div>
                     </div>
@@ -1052,11 +1052,11 @@ export const NewScreening: React.FC<NewScreeningProps> = ({ onStartAnalysis }) =
                       <span className="text-sm font-semibold text-slate-200">
                         Upload Passenger Selfie or Snapshot
                       </span>
-                      <span className="text-xs text-slate-400 max-w-[240px]">
-                        Used to verify whether the person presenting the document is the authentic owner
+                      <span className="text-xs text-emerald-300/90 font-medium max-w-[250px] bg-emerald-950/40 px-2 py-1 rounded border border-emerald-800/40">
+                        Live photo to compare with the document's photo
                       </span>
                       <span className="bg-slate-900 text-emerald-400 text-[10px] font-mono px-2.5 py-1 rounded border border-slate-800 mt-1">
-                        Upload Portrait Image
+                        Upload Selfie from Device
                       </span>
                     </div>
                   )}

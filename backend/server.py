@@ -342,9 +342,11 @@ def screen_document():
     pil_img = None
     preproc_meta = {}
 
+    raw_cv_img = None
     if image_base64 and len(image_base64) > 100:
         cv_img = decode_base64_image(image_base64)
         if cv_img is not None:
+            raw_cv_img = cv_img.copy()
             preproc_result = preprocessor.process(cv_img)
             cv_img = preproc_result["processed_image"]
             preproc_meta = preproc_result["metadata"]
@@ -352,6 +354,7 @@ def screen_document():
 
     if cv_img is None:
         cv_img = np.full((600, 900, 3), 245, dtype=np.uint8)
+        raw_cv_img = cv_img.copy()
         pil_img = Image.fromarray(cv_img)
 
     start_time = time.perf_counter()
@@ -384,6 +387,7 @@ def screen_document():
     face_cv_img = decode_base64_image(face_image_base64) if face_image_base64 else None
     face_1to1 = biometric_vault.verify_1_to_1(
         doc_img=cv_img,
+        raw_doc_img=raw_cv_img,
         live_img=face_cv_img,
         mock_scenario=mock_face_scenario
     )
@@ -435,10 +439,24 @@ def screen_document():
         risk_breakdown.append({"module": "Font & Spacing Geometry", "scoreContribution": 20, "reason": "Pasted or retyped characters detected via bounding box variance", "severity": "medium"})
 
     # Face Matching (Biometrics: 1:1 and 1:N)
-    if not face_1to1["is_match"]:
+    if face_1to1.get("no_face_in_document"):
+        risk_score += 45
+        detected_issues.append("Missing Document Photograph: Zero facial photographs detected on the document. The image appears to be the BACK side (address & QR code). Please upload the FRONT side containing your photograph.")
+        risk_breakdown.append({
+            "module": "1:1 Biometric Face Match",
+            "scoreContribution": 45,
+            "reason": "Document has no photograph (Aadhaar back side detected). Front side required for facial verification.",
+            "severity": "high"
+        })
+    elif not face_1to1["is_match"]:
         risk_score += 40
-        detected_issues.append(f"Biometric Face Mismatch: Cosine similarity {face_1to1['similarity_score']}% below 75% threshold")
-        risk_breakdown.append({"module": "1:1 Biometric Face Match", "scoreContribution": 40, "reason": "Facial feature vector distance indicates impersonation attempt", "severity": "high"})
+        detected_issues.append(f"Biometric Face Mismatch: Neural cosine similarity {face_1to1['similarity_score']}% is below the mandatory 75% security threshold")
+        risk_breakdown.append({
+            "module": "1:1 Biometric Face Match",
+            "scoreContribution": 40,
+            "reason": "Facial feature vector distance indicates impersonation attempt (different identity)",
+            "severity": "high"
+        })
 
     if face_1toN["duplicate_detected"]:
         risk_score += 45
@@ -545,13 +563,14 @@ def screen_document():
             "photoUrl": (
                 f"data:image/jpeg;base64,{face_1to1['extracted_portrait_b64']}"
                 if face_1to1.get("extracted_portrait_b64")
-                else (image_base64 or "https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&h=420&fit=crop")
+                else (None if face_1to1.get("no_face_in_document") else (image_base64 or "https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&h=420&fit=crop"))
             ),
+            "noFaceInDocument": bool(face_1to1.get("no_face_in_document", False)),
             "documentFullUrl": image_base64,
             "livePhotoUrl": (
                 "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=380&fit=crop&crop=face"
                 if mock_face_scenario == "mismatch"
-                else (face_image_base64 or image_base64 or "https://images.unsplash.com/photo-1544717305-2782549b5136?w=300&h=380&fit=crop&crop=face")
+                else (face_image_base64 or "https://images.unsplash.com/photo-1544717305-2782549b5136?w=300&h=380&fit=crop&crop=face")
             )
         },
         "modules": {
@@ -588,10 +607,18 @@ def screen_document():
             "faceVerification": {
                 "id": "face",
                 "name": "Biometric 1:1 & 1:N Identity Engine",
-                "status": "mismatch" if not face_1to1["is_match"] or face_1toN["duplicate_detected"] else "valid",
-                "badge": f"{face_1to1['similarity_score']}% MATCH" if not face_1toN["duplicate_detected"] else "DUPLICATE IDENTITY ALERT",
+                "status": "mismatch" if face_1to1.get("no_face_in_document") or not face_1to1["is_match"] or face_1toN["duplicate_detected"] else "valid",
+                "badge": (
+                    "NO PHOTO IN DOCUMENT"
+                    if face_1to1.get("no_face_in_document")
+                    else (face_1to1.get("badge", f"{face_1to1['similarity_score']}% MATCH") if not face_1toN["duplicate_detected"] else "DUPLICATE IDENTITY ALERT")
+                ),
                 "confidence": face_1to1["similarity_score"],
-                "description": face_1toN["reason"] if face_1toN["duplicate_detected"] else face_1to1["verdict"],
+                "description": (
+                    face_1to1.get("description")
+                    if face_1to1.get("no_face_in_document")
+                    else (face_1toN["reason"] if face_1toN["duplicate_detected"] else face_1to1.get("description", face_1to1.get("verdict")))
+                ),
                 "details": {
                     "one_to_one": face_1to1,
                     "one_to_n_duplicate": face_1toN
